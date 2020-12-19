@@ -17,12 +17,17 @@ class TicketType:
 
 class Ticket(models.Model):
 
-    event = models.ForeignKey(Event, null=False)
+    event = models.ForeignKey(Event, null=False, on_delete=models.CASCADE)
     ticket_type = models.IntegerField(choices=TicketType.TICKET_TYPE, default=0)
-    available = models.IntegerField(default=0)
+    quantity = models.IntegerField(default=0)
 
-    def reduce(self, amount):
-        self.available -= amount
+    def reduce_quantity(self, amount):
+        self.quantity -= amount
+
+    def available(self, event, ticket_type):
+        reserved = Reservation.objects.filter(valid=True, event=event, ticket_type=ticket_type)
+        result = self.available - reserved
+        return result
 
     class Meta:
         unique_together = ('event', 'ticket_type')
@@ -30,8 +35,17 @@ class Ticket(models.Model):
 
 class Reservation(models.Model):
 
-    event = models.ForeignKey(Event, null=False)
+    event = models.ForeignKey(Event, null=False, on_delete=models.CASCADE)
     ticket_type = models.IntegerField(choices=TicketType.TICKET_TYPE, null=False)
     start_time = models.DateTimeField(auto_now=True)
     duration = models.IntegerField(default=15)
-    valid = models.BooleanField(default=False)
+    first_name = models.CharField(max_length=32)
+    last_name = models.CharField(max_length=32)
+
+    @property
+    def valid(self):
+        now = timezone.now()
+        discrepancy = timedelta(now-start_time)
+        if discrepancy < self.duration:
+            return True
+        return False
