@@ -1,3 +1,7 @@
 from django.contrib import admin
+from event_tickets.models import Ticket
 
-# Register your models here.
+
+class TicketAdmin(admin.ModelAdmin):
+    pass
+admin.site.register(Ticket, TicketAdmin)
