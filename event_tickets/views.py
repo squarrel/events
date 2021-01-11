@@ -5,6 +5,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from event_tickets.models import Ticket, Reservation, TicketType
 from event_tickets.serializers import ReservationSerializer, TicketSerializer
+from payments import PaymentGateway
 
 
 @csrf_exempt
@@ -43,10 +44,18 @@ def buy(request, event_id, ticket_type):
     except Reservation.DoesNotExist:
         pass
 
-    if (reservation and reservation.valid) or tickets.available > 0:
+    if (reservation and reservation.valid) or tickets.available() > 0:
+        payment = PaymentGateway().charge(1, 'good_token')
+        if not payment:
+            return JsonResponse({'message': 'Payment Error'})
+
         if reservation:
             reservation.active = False
             reservation.save()
 
         tickets.reduce_quantity(1)
         tickets.save()
+
+        return JsonResponse({'message': 'Success'})
+
+    return JsonResponse({'message': 'Failure'})
