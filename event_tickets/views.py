@@ -32,3 +32,21 @@ def reserve(request, event_id, ticket_type, first_name, last_name):
 
     serializer = ReservationSerializer(reservation)
     return JsonResponse(serializer.data, safe=False)
+
+
+def buy(request, event_id, ticket_type):
+    tickets = Ticket.objects.get(event_id=event_id, ticket_type=ticket_type)
+    reservation = None
+
+    try:
+        reservation = Reservation.objects.get(event_id=event_id, ticket_type=ticket_type, active=True)
+    except Reservation.DoesNotExist:
+        pass
+
+    if (reservation and reservation.valid) or tickets.available > 0:
+        if reservation:
+            reservation.active = False
+            reservation.save()
+
+        tickets.reduce_quantity(1)
+        tickets.save()
