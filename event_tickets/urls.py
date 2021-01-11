@@ -6,5 +6,6 @@ from event_tickets import views
 urlpatterns = [
     path('', views.index),
     url(r'^available/(?P<event_id>\d+)$', views.available),
-    url(r'^reserve/(?P<event_id>\d+)/(?P<ticket_type>\d+)/(?P<first_name>\w+)/(?P<last_name>\w+)/$', views.reserve),
+    url(r'^reserve/(?P<event_id>\d+)/(?P<ticket_type>\d+)/(?P<first_name>\w+)/(?P<last_name>\w+)/$', views.reserve, name='reserve'),
+    url(r'^buy/(?P<event_id>\d+)/(?P<ticket_type>\d+)/$', views.buy, name='buy'),
 ]
