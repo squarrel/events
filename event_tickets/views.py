@@ -3,8 +3,8 @@ import json
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
-from event_tickets.models import Ticket, Reservation
-from event_tickets.serializers import TicketSerializer
+from event_tickets.models import Ticket, Reservation, TicketType
+from event_tickets.serializers import ReservationSerializer, TicketSerializer
 
 
 @csrf_exempt
@@ -22,3 +22,13 @@ def available(request, event_id):
         result[ticket.ticket_type] = ticket.available()
 
     return JsonResponse(result)
+
+
+def reserve(request, event_id, ticket_type, first_name, last_name):
+    reservation = Reservation.objects.create(
+        event_id=event_id, ticket_type=ticket_type,
+        first_name=first_name, last_name=last_name
+    )
+
+    serializer = ReservationSerializer(reservation)
+    return JsonResponse(serializer.data, safe=False)
