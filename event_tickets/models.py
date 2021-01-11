@@ -28,7 +28,7 @@ class Ticket(models.Model):
         self.quantity -= amount
 
     def available(self):
-        reserved = Reservation.objects.filter(event=self.event, ticket_type=self.ticket_type)
+        reserved = Reservation.objects.filter(event=self.event, ticket_type=self.ticket_type, active=True)
         result = self.quantity
         for r in reserved:
             if r.valid:
@@ -47,6 +47,7 @@ class Reservation(models.Model):
     duration = models.IntegerField(default=15)
     first_name = models.CharField(max_length=32)
     last_name = models.CharField(max_length=32)
+    active = models.BooleanField(default=True)
 
     @property
     def valid(self):
